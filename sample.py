@@ -50,6 +50,11 @@ FLAGS = gflags.FLAGS
 # Google APIs Console <https://code.google.com/apis/console>
 CLIENT_SECRETS = 'client_secrets.json'
 
+API_VERSION = 'v1beta15'
+GCE_URL = 'https://www.googleapis.com/compute/%s/projects/' % (API_VERSION)
+PROJECT_ID = 'google.com:discoproject'
+DEFAULT_ZONE = 'us-central1-a'
+
 # Helpful message to display if the CLIENT_SECRETS file is missing.
 MISSING_CLIENT_SECRETS_MESSAGE = """
 WARNING: Please configure OAuth 2.0
@@ -106,14 +111,41 @@ def main(argv):
   # Create an httplib2.Http object to handle our HTTP requests and authorize it
   # with our good Credentials.
   http = httplib2.Http()
-  http = credentials.authorize(http)
+  auth_http = credentials.authorize(http)
 
-  service = build('compute', 'v1beta15', http=http)
+  service = build('compute', 'v1beta15', http=auth_http)
 
   try:
 
     print "Success! Now add code here."
 
+    gce_service = build('compute', API_VERSION)
+    project_url = GCE_URL + PROJECT_ID
+
+    # List instances
+    request = gce_service.instances().list(project=PROJECT_ID, filter=None, zone=DEFAULT_ZONE)
+    response = request.execute(auth_http)
+    # response = request.execute(http)
+    print "Instances in zone '{}':".format(DEFAULT_ZONE)
+    if response and 'items' in response:
+      instances = response['items']
+      for instance in instances:
+        print "- {}".format(instance['name'])
+    else:
+      print '# No instances to list.'
+
+    print "Experimenting with zones:"
+    request = gce_service.zones().list(project=PROJECT_ID, filter=None)
+    response = request.execute(auth_http)
+    if response and 'items' in response:
+      zones = response['items']
+      for zone in zones:
+        maint_win = None
+        if 'maintenanceWindows' in zone:
+          maint_win = zone['maintenanceWindows']
+        if maint_win:
+          maint_win = zone['maintenanceWindows'][0]['endTime']
+        print "- {} # {}".format(zone['name'], maint_win)
 
     # For more information on the Compute Engine API API you can visit:
     #

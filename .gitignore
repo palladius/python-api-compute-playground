@@ -1,2 +1,4 @@
 *.pyc
 client_secrets.json
+*swp
+sample.dat
