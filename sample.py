@@ -1,18 +1,4 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright (C) 2012 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 """Command-line skeleton application for Compute Engine API.
 Usage:
@@ -41,6 +27,8 @@ from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.tools import run
 
+import constants
+
 
 FLAGS = gflags.FLAGS
 
@@ -52,8 +40,6 @@ CLIENT_SECRETS = 'client_secrets.json'
 
 API_VERSION = 'v1beta15'
 GCE_URL = 'https://www.googleapis.com/compute/%s/projects/' % (API_VERSION)
-PROJECT_ID = 'google.com:discoproject'
-DEFAULT_ZONE = 'us-central1-a'
 
 # Helpful message to display if the CLIENT_SECRETS file is missing.
 MISSING_CLIENT_SECRETS_MESSAGE = """
@@ -117,16 +103,18 @@ def main(argv):
 
   try:
 
-    print "Success! Now add code here."
+    print "# Authentication Success! Now add code here."
+    print "#### Please note the output is in YAML format :)"
 
     gce_service = build('compute', API_VERSION)
-    project_url = GCE_URL + PROJECT_ID
+    project_url = GCE_URL + constants.PROJECT_ID
 
     # List instances
-    request = gce_service.instances().list(project=PROJECT_ID, filter=None, zone=DEFAULT_ZONE)
+    request = gce_service.instances().list(project=constants.PROJECT_ID,
+                                           filter=None, zone=constants.DEFAULT_ZONE)
     response = request.execute(auth_http)
     # response = request.execute(http)
-    print "Instances in zone '{}':".format(DEFAULT_ZONE)
+    print "Instances in zone '{}':".format(constants.DEFAULT_ZONE)
     if response and 'items' in response:
       instances = response['items']
       for instance in instances:
@@ -134,8 +122,8 @@ def main(argv):
     else:
       print '# No instances to list.'
 
-    print "Experimenting with zones:"
-    request = gce_service.zones().list(project=PROJECT_ID, filter=None)
+    print "Available Zones: # with maintenance zone end"
+    request = gce_service.zones().list(project=constants.PROJECT_ID, filter=None)
     response = request.execute(auth_http)
     if response and 'items' in response:
       zones = response['items']
